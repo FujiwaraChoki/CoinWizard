@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=ADLaM+Display&family=League+Spartan:wght@600;700&display=swap');
+
+body {
+    background: #1d1c1c;
+    color: #ffffff;
+    font-family: 'ADLaM Display', cursive;
+    overflow-y: hidden;
+    cursor: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/9632/happy.png'), auto;
+}
+
+h1 {
+    font-size: 50px;
+    font-weight: 700;
+    margin-bottom: 50px;
+}
+
+button {
+    transition: all 0.3s ease 0s;
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid #ffffff;
+    padding: 20px 40px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+button:hover {
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    transform: scale(1.1);
+}
+
+input {
+    transition: all 0.3s ease 0s;
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid #ffffff;
+    padding: 20px 40px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+input:hover {
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    transform: scale(1.1);
+}
+
+input:focus {
+    outline: none;
+}
+
+.container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.crypto-selector {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+#crypto-search {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.crypto-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.crypto-item {
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    width: 100px;
+    text-align: center;
+}
+
+.crypto-item:hover {
+    background: #ccc;
+}
+
+.icon {
+    padding: 0 10px;
+}
+
+.hidden {
+    display: none;
+}
+
+#result-price {
+    text-align: center;
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#result-crypto-name {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+#result-crypto-image {
+    max-width: 100px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+#result-actual-crypto-price,
+#result-predicted-crypto-price {
+    font-size: 18px;
+    margin-top: 10px;
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://kit.fontawesome.com/109eff01ba.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>CoinWizard</h1>
+
+        <button id="start-button">
+            Start
+        </button>
+
+        <div class="crypto-selector hidden" id="crypto-container">
+            <input type="text" id="crypto-search" placeholder="Search cryptocurrencies...">
+            <ul class="crypto-list hidden" id="crypto-list">
+                <li class="crypto-item">Bitcoin<i class="fa-solid fa-right-to-bracket icon"></i></li>
+                <li class="crypto-item">Ethereum<i class="fa-solid fa-right-to-bracket icon"></i></li>
+                <li class="crypto-item">Ripple<i class="fa-solid fa-right-to-bracket icon"></i></li>
+            </ul>
+        </div>
+
+        <div id="result" class="hidden">
+            <h2 id="result-crypto-name"></h2>
+            <img src="" alt="" id="result-crypto-image">
+            <h3 id="result-actual-crypto-price">Current Price: </h3>
+            <h3 id="result-predicted-crypto-price">Predicted Price: </h3>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
