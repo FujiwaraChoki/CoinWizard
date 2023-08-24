@@ -58,13 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { currentPrice, cryptoImage } = await getCurrentPrice(crypto);  // Await the result here
                 const predictedPrice = await predictPrice(crypto); // Await the prediction too
                 resultCryptoName.textContent = crypto;
-                console.log(currentPrice);
 
                 cryptoSelector.classList.add('hidden');
                 result.classList.remove('hidden');
                 resultCryptoImage.src = cryptoImage;
                 resultActualCryptoPrice.innerText = `$${currentPrice}`;
-                resultPredictedCryptoPrice.innerText = `$${predictPrice}`;
+                resultPredictedCryptoPrice.innerText = `$${predictedPrice}`;
+
+                console.log(currentPrice, predictedPrice);
 
                 return false;
             });
