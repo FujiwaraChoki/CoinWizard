@@ -2,7 +2,7 @@
 
 Predict the prices of certain cryptocurrencies by training a PyTorch Model on the history data from the NASDAQ API.
 
-> **Important**: This is a work in progress, so it isn't a full-fledged working application in the current stages of development.
+> **Important**: This is a work in progress, so it might not have support for your favorite cryptocurrency yet. If you want to add support for a cryptocurrency, please open an issue or a pull request.
 
 ## Installation
 
