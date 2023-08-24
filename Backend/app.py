@@ -1,17 +1,21 @@
-from flask import Flask, jsonify
+# Import necessary libraries
+import csv
 import torch
+import requests
+import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 from flask_cors import CORS
-import numpy as np
-import requests
-import csv
+from flask import Flask, jsonify
 
+# Initialize Flask application and enable CORS
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 class PricePredictionModel(nn.Module):
+    # Define a neural network model for price prediction
+
     def __init__(self, input_size, hidden_size):
         super(PricePredictionModel, self).__init__()
         self.fc1 = nn.Linear(input_size, hidden_size)
@@ -24,8 +28,10 @@ class PricePredictionModel(nn.Module):
 
 
 def preprocess_data(data):
+    # Function to preprocess input data
+
     data_array = np.array(data)
-    data_array = np.nan_to_num(data_array, nan=0.0)  # Replace NaN with 0.0
+    data_array = np.nan_to_num(data_array, nan=0.0)
     data_array = data_array.astype(np.float32)
 
     feature_means = np.mean(data_array, axis=0)
@@ -34,6 +40,8 @@ def preprocess_data(data):
 
 
 def load_data(crypto):
+    # Function to load data from a CSV file for a specific cryptocurrency
+
     with open(f'./data/{crypto}.csv', 'r') as f:
         reader = csv.reader(f)
         data = [row for row in reader]
@@ -41,6 +49,8 @@ def load_data(crypto):
 
 
 def get_image_for_crypto(crypto):
+    # Function to get an image URL based on the provided cryptocurrency name
+
     if 'bitcoin' in crypto.lower():
         return 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/2048px-Bitcoin.svg.png'
     elif 'ethereum' in crypto.lower():
@@ -57,6 +67,8 @@ def get_image_for_crypto(crypto):
 
 @app.route("/predict/<crypto>", methods=["GET"])
 def predict_crypto_price(crypto):
+    # Route to predict the price of a given cryptocurrency
+
     api_key = open("./key", "r").read().strip()
     crypto_abbreviation = get_abbreviation(crypto)
     url = f'https://data.nasdaq.com/api/v3/datasets/BITFINEX/{crypto_abbreviation}USD/data.csv?api_key={api_key}'
@@ -73,7 +85,7 @@ def predict_crypto_price(crypto):
     current_price_tensor = torch.tensor(
         current_price_features, dtype=torch.float32)
     current_price_tensor = current_price_tensor.unsqueeze(
-        0)  # Add batch dimension
+        0)
 
     predicted_price = model(current_price_tensor)
     predicted_price_value = predicted_price.item()
@@ -82,6 +94,8 @@ def predict_crypto_price(crypto):
 
 
 def get_abbreviation(crypto):
+    # Function to get the abbreviation of a cryptocurrency based on its name
+
     if 'bitcoin' in crypto.lower():
         return 'BTC'
     elif 'ethereum' in crypto.lower():
@@ -98,6 +112,8 @@ def get_abbreviation(crypto):
 
 @app.route("/current/<crypto>", methods=["GET"])
 def get_current_crypto_price(crypto):
+    # Route to get the current price of a given cryptocurrency
+
     api_key = open("./key", "r").read().strip()
     crypto_abbreviation = get_abbreviation(crypto)
     url = f'https://data.nasdaq.com/api/v3/datasets/BITFINEX/{crypto_abbreviation}USD/data.csv?api_key={api_key}'
@@ -111,8 +127,10 @@ def get_current_crypto_price(crypto):
 
 
 if __name__ == "__main__":
+    # Initialize the neural network model, loss criterion, and optimizer
     model = PricePredictionModel(input_size=3370, hidden_size=16)
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
+    # Run the Flask app on host "0.0.0.0" and port 8080 with debugging enabled
     app.run(host="0.0.0.0", port=8080, debug=True)
