@@ -1,6 +1,12 @@
 import os
-import multiprocessing
-from termcolor import colored
+try:
+    import multiprocessing
+    from termcolor import colored
+except ImportError:
+    print('Installing Requirements...')
+    os.system('pip3 install -r requirements.txt')
+    print('Requirements Installed...')
+    print('Please Run Again...')
 
 
 def start_frontend():
