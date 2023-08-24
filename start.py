@@ -1,4 +1,5 @@
 import os
+import multiprocessing
 from termcolor import colored
 
 
@@ -20,15 +21,13 @@ def start_backend():
     print(colored('[x] Backend Started...', 'green'))
 
 
-def start(FRONTEND=True, BACKEND=True):
-    if FRONTEND:
-        start_frontend()
-    if BACKEND:
-        start_backend()
-
-
 def main():
-    start(BACKEND=False)
+    frontend_p = multiprocessing.Process(target=start_frontend)
+    backend_p = multiprocessing.Process(target=start_backend)
+
+    # Start the processes
+    frontend_p.start()
+    backend_p.start()
 
 
 if __name__ == '__main__':

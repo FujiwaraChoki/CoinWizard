@@ -1,2 +1,5 @@
-torch
-flask-reload
+Flask
+torch===1.5.0
+numpy
+flask-cors
+requests

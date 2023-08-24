@@ -4,36 +4,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡</title>
-    <link rel="stylesheet" href="style.css">
+    <title>⚡ CoinWizard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://kit.fontawesome.com/109eff01ba.js" crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+    <style>
+        .crypto-list li {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .crypto-list li:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    </style>
 </head>
 
-<body>
-    <div class="container">
-        <h1>CoinWizard</h1>
+<body
+    class="bg-gray-900 text-white font-custom overflow-y-hidden cursor-[url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/9632/happy.png'), auto]">
+    <div class="flex flex-col h-screen">
+        <!-- Navbar -->
+        <nav class="bg-gray-800 py-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold">CoinWizard</h1>
+                <div class="flex space-x-4">
+                    <a href="#" class="hover:text-gray-300"><i class="fas fa-home mr-1"></i>Home</a>
+                    <a href="#" class="hover:text-gray-300"><i class="fas fa-info-circle mr-1"></i>About</a>
+                    <a href="#" class="hover:text-gray-300"><i class="fas fa-cogs mr-1"></i>Services</a>
+                </div>
+            </div>
+        </nav>
 
-        <button id="start-button">
-            Start
-        </button>
+        <!-- Content -->
+        <div class="flex-grow flex justify-center items-center">
+            <div class="text-center">
+                <h1 class="text-5xl font-bold mb-10">Welcome to CoinWizard</h1>
+                <p class="text-lg mb-6">Predict cryptocurrency prices with confidence using CoinWizard's advanced
+                    algorithms.</p>
+                <button id="start-button" type="button"
+                    class="transition-all duration-300 bg-white text-black border-2 border-white py-3 px-8 rounded-lg font-semibold text-lg hover:bg-transparent hover:text-white transform hover:scale-110">
+                    <i class="fas fa-magic mr-2"></i> Get Started
+                </button>
+            </div>
+        </div>
+        <div class="flex-grow flex justify-center">
+            <!-- Result -->
+            <div id="result" class="hidden mt-5">
+                <div id="name_image" class="flex justify-between items-center mb-5">
+                    <h2 id="result-crypto-name" class="text-3xl mb-2"></h2>
+                    <img src="" alt="" id="result-crypto-image" class="h-10 mb-2">
+                </div>
+                <h3 id="result-actual-crypto-price" class="text-xl mt-2"></h3>
+                <h3 id="result-predicted-crypto-price" class="text-xl mt-2"></h3>
+            </div>
 
-        <div class="crypto-selector hidden" id="crypto-container">
-            <input type="text" id="crypto-search" placeholder="Search cryptocurrencies...">
-            <ul class="crypto-list hidden" id="crypto-list">
-                <li class="crypto-item">Bitcoin<i class="fa-solid fa-right-to-bracket icon"></i></li>
-                <li class="crypto-item">Ethereum<i class="fa-solid fa-right-to-bracket icon"></i></li>
-                <li class="crypto-item">Ripple<i class="fa-solid fa-right-to-bracket icon"></i></li>
-            </ul>
+            <!-- Crypto Selector -->
+            <div class="crypto-selector hidden mt-5" id="crypto-container">
+                <input type="text" id="crypto-search"
+                    class="mb-4 transition-all duration-300 bg-white text-black border-2 border-white py-5 px-10 rounded-lg font-semibold text-lg hover:bg-transparent hover:text-white transform hover:scale-110"
+                    placeholder="Search cryptocurrencies...">
+                <ul class="crypto-list hidden" id="crypto-list">
+                    <li type="button"
+                        class="crypto-item py-3 px-6 text-lg border-t border-b border-gray-700 cursor-pointer hover:bg-gray-800">
+                        <i class="fab fa-bitcoin text-xl mr-2"></i>Bitcoin
+                    </li>
+                    <li type="button"
+                        class="crypto-item py-3 px-6 text-lg border-b border-gray-700 cursor-pointer hover:bg-gray-800">
+                        <i class="fab fa-ethereum text-xl mr-2"></i>Ethereum
+                    </li>
+                    <li type="button"
+                        class="crypto-item py-3 px-6 text-lg border-b border-gray-700 cursor-pointer hover:bg-gray-800">
+                        <i class="fab fa-stripe-s text-xl mr-2"></i>Ripple
+                    </li>
+                </ul>
+            </div>
         </div>
 
-        <div id="result" class="hidden">
-            <h2 id="result-crypto-name"></h2>
-            <img src="" alt="" id="result-crypto-image">
-            <h3 id="result-actual-crypto-price">Current Price: </h3>
-            <h3 id="result-predicted-crypto-price">Predicted Price: </h3>
-        </div>
+        <!-- Footer -->
+        <footer class="bg-gray-800 py-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <div>
+                    <span class="text-gray-400">Connect with me:</span>
+                    <a href="#" class="ml-2 text-gray-300 hover:text-white">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="#" class="ml-2 text-gray-300 hover:text-white">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                </div>
+                <div>
+                    <span class="text-gray-400">Portfolio:</span>
+                    <a href="#" class="ml-2 text-gray-300 hover:text-white">
+                        <i class="fas fa-user"></i>
+                    </a>
+                </div>
+            </div>
+        </footer>
     </div>
-    <script src="script.js"></script>
 </body>
 
 </html>
