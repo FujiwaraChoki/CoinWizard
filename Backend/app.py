@@ -1,100 +1,18 @@
-# Import necessary libraries
 import csv
 import torch
 import requests
-import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 from flask_cors import CORS
 from flask import Flask, jsonify
+from termcolor import colored
 
-# Initialize Flask application and enable CORS
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-
-class PricePredictionModel(nn.Module):
-    # Define a neural network model for price prediction
-
-    def __init__(self, input_size, hidden_size):
-        super(PricePredictionModel, self).__init__()
-        self.fc1 = nn.Linear(input_size, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, 1)
-
-    def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
-
-
-def preprocess_data(data):
-    # Function to preprocess input data
-
-    data_array = np.array(data)
-    data_array = np.nan_to_num(data_array, nan=0.0)
-    data_array = data_array.astype(np.float32)
-
-    feature_means = np.mean(data_array, axis=0)
-    centered_data = data_array - feature_means
-    return centered_data, feature_means
-
-
-def load_data(crypto):
-    # Function to load data from a CSV file for a specific cryptocurrency
-
-    with open(f'./data/{crypto}.csv', 'r') as f:
-        reader = csv.reader(f)
-        data = [row for row in reader]
-    return data
-
-
-def get_image_for_crypto(crypto):
-    # Function to get an image URL based on the provided cryptocurrency name
-
-    if 'bitcoin' in crypto.lower():
-        return 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/2048px-Bitcoin.svg.png'
-    elif 'ethereum' in crypto.lower():
-        return 'https://www.pngall.com/wp-content/uploads/10/Ethereum-Logo-PNG-Pic.png'
-    elif 'litecoin' in crypto.lower():
-        return 'https://cryptologos.cc/logos/litecoin-ltc-logo.png'
-    elif 'ripple' in crypto.lower():
-        return 'https://o.remove.bg/downloads/183f79fa-8a44-4d31-b254-a61869f8b912/xrp-logo-removebg-preview.png'
-    elif 'bitcoin cash' in crypto.lower():
-        return 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Bitcoin_Cash.png/600px-Bitcoin_Cash.png?20210403103340'
-    else:
-        return 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/2048px-Bitcoin.svg.png'
-
-
-@app.route("/predict/<crypto>", methods=["GET"])
-def predict_crypto_price(crypto):
-    # Route to predict the price of a given cryptocurrency
-
-    api_key = open("./key", "r").read().strip()
-    crypto_abbreviation = get_abbreviation(crypto)
-    url = f'https://data.nasdaq.com/api/v3/datasets/BITFINEX/{crypto_abbreviation}USD/data.csv?api_key={api_key}'
-    response = requests.get(url)
-    current_price_data = response.text.split('\n')
-    csv_reader = csv.reader(current_price_data)
-    current_price_features = [row[4] for row in csv_reader if row]
-
-    print("Current price features: ", current_price_features)
-    current_price_features = [0.0 if item == 'Last' else float(item)
-                              for item in current_price_features if item.replace('.', '', 1).isdigit()]
-
-    model.eval()
-    current_price_tensor = torch.tensor(
-        current_price_features, dtype=torch.float32)
-    current_price_tensor = current_price_tensor.unsqueeze(
-        0)
-
-    predicted_price = model(current_price_tensor)
-    predicted_price_value = predicted_price.item()
-
-    return jsonify({"predicted_price": predicted_price_value})
-
-
 def get_abbreviation(crypto):
-    # Function to get the abbreviation of a cryptocurrency based on its name
+    # Function to get the abbreviation of a
+    # cryptocurrency based on its name
 
     if 'bitcoin' in crypto.lower():
         return 'BTC'
@@ -109,28 +27,135 @@ def get_abbreviation(crypto):
     else:
         return crypto
 
+class PricePredictionModel(nn.Module):
+    def __init__(self, input_size, hidden_sizes):
+        super(PricePredictionModel, self).__init__()
+        layers = []
+        prev_size = input_size
+        for size in hidden_sizes:
+            layers.append(nn.Linear(prev_size, size))
+            layers.append(nn.ReLU())
+            prev_size = size
+        self.hidden_layers = nn.Sequential(*layers)
+        self.output_layer = nn.Sequential(nn.Linear(prev_size, 32), nn.ReLU())
 
-@app.route("/current/<crypto>", methods=["GET"])
-def get_current_crypto_price(crypto):
-    # Route to get the current price of a given cryptocurrency
+    def forward(self, x):
+        print("Size after hidden layers:", x.size())
+        x = self.hidden_layers(x)
+        print("Size before output layer:", x.size())
+        x = self.output_layer(x)
+        return x
 
+    
+def load_data(crypto):
+    # Function to load data from a CSV file for a specific cryptocurrency
+    with open(f'./data/{crypto}.csv', 'r') as f:
+        reader = csv.reader(f)
+        data = [row for row in reader]
+    return data
+
+model = None
+@app.route("/predict/<crypto>", methods=["GET"])
+def predict_crypto_price(crypto):
     api_key = open("./key", "r").read().strip()
     crypto_abbreviation = get_abbreviation(crypto)
     url = f'https://data.nasdaq.com/api/v3/datasets/BITFINEX/{crypto_abbreviation}USD/data.csv?api_key={api_key}'
     response = requests.get(url)
-    with open(f'./data/{crypto}.csv', 'w') as f:
-        f.write(response.text)
     current_price_data = response.text.split('\n')
-    current_price = current_price_data[1].split(',')[4]
-    print(current_price)
-    return jsonify({"current_price": current_price, "image": get_image_for_crypto(crypto)})
+    csv_reader = csv.reader(current_price_data)
+    csv_reader = list(csv_reader)[1:]
+    
+    current_price_features = []
+    for row in csv_reader:
+        if row and row[4].replace('.', '', 1).isdigit():
+            current_price_features.append(float(row[4]))
+    
+    current_price_features_tensor = torch.tensor(current_price_features, dtype=torch.float32)
+    
+    feature_means = torch.mean(current_price_features_tensor)
+    feature_stds = torch.std(current_price_features_tensor)
+    
+    normalized_features = (current_price_features_tensor - feature_means) / feature_stds
+    
+    # Select the first 6 features from normalized_features
+    selected_features = normalized_features[:6]
 
+    # Reshape the selected_features to match the expected input size (1, 6)
+    normalized_features_tensor = selected_features.view(1, -1)
+
+    model.eval()
+    with torch.no_grad():
+        predicted_price = model(normalized_features_tensor)
+        predicted_price_value = predicted_price.item()
+    
+    return jsonify({"predicted_price": predicted_price_value})
+
+@app.route("/train/<crypto>", methods=["POST"])
+def train_model(crypto):
+    global model
+    training_data = load_data(crypto)
+    
+    # Remove the header row
+    training_data = training_data[1:]
+    
+    # Convert the data to numerical format
+    data_array = []
+    for row in training_data:
+        numerical_row = [float(val) if val.replace('.', '', 1).isdigit() else 0.0 for val in row[1:]]  # Exclude the date column
+        data_array.append(numerical_row)
+    
+    data_array = torch.tensor(data_array, dtype=torch.float32)
+    
+    # Adjust the input size to match the number of features
+    input_size = data_array.shape[1] - 1
+    
+    feature_means = torch.mean(data_array, dim=0)
+    feature_stds = torch.std(data_array, dim=0)
+    
+    normalized_data = (data_array - feature_means) / feature_stds
+    
+    # Only include the first 6 features as input (excluding date)
+    features = normalized_data[:, :input_size]
+    labels = normalized_data[:, -1]  # Assuming the last column is the label
+    
+    features_tensor = features.clone().detach()
+    labels_tensor = labels.clone().detach()
+    
+    num_epochs = 100
+    learning_rate = 0.001
+    hidden_sizes = [64, 32]
+    
+    model = PricePredictionModel(input_size=input_size, hidden_sizes=hidden_sizes)
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    
+    model.train()
+    for epoch in range(num_epochs):
+        optimizer.zero_grad()
+        predictions = model(features_tensor)
+        loss = criterion(predictions, labels_tensor)
+        loss.backward()
+        optimizer.step()
+    
+    return jsonify({"message": "Model trained successfully"})
+
+
+@app.route("/current/<crypto>", methods=["GET"])
+def get_current_crypto_price(crypto):
+    api_key = open("./key", "r").read().strip()
+    crypto_abbreviation = get_abbreviation(crypto)
+    url = f'https://data.nasdaq.com/api/v3/datasets/BITFINEX/{crypto_abbreviation}USD/data.csv?api_key={api_key}'
+    response = requests.get(url)
+    current_price_data = response.text.split('\n')
+    csv_reader = csv.reader(current_price_data)
+    current_price = None
+    for row in csv_reader:
+        if row and row[4] != "Last":
+            current_price = row[4]
+            break
+    
+    return jsonify({"current_price": current_price})
 
 if __name__ == "__main__":
-    # Initialize the neural network model, loss criterion, and optimizer
-    model = PricePredictionModel(input_size=3370, hidden_size=16)
-    criterion = nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
-
-    # Run the Flask app on host "0.0.0.0" and port 8080 with debugging enabled
+    torch.autograd.set_detect_anomaly(True)  # Enable anomaly detection for debugging
     app.run(host="0.0.0.0", port=8080, debug=True)
