@@ -26,6 +26,7 @@ def get_abbreviation(crypto):
     else:
         return crypto
 
+# Modify your PricePredictionModel class to load the weights
 class PricePredictionModel(nn.Module):
     def __init__(self, input_size, hidden_size, output_size=1):
         super(PricePredictionModel, self).__init__()
@@ -38,16 +39,15 @@ class PricePredictionModel(nn.Module):
         out = self.fc(out[:, -1, :])
         return out
 
-# Instantiate the model
+# Create and initialize the model
 input_size = 1
-hidden_size = 1000
+hidden_size = 100
 output_size = 1
+model = PricePredictionModel(input_size, hidden_size, output_size)
 
-PricePredictionModel = PricePredictionModel(input_size, hidden_size, output_size)
-
-# Define your loss function (e.g., Mean Squared Error) and optimizer (e.g., Adam)
+# Define loss and optimizer
 criterion = nn.MSELoss()
-optimizer = optim.Adam(PricePredictionModel.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # Define a custom dataset class for your time series data
 class TimeSeriesDataset(Dataset):
@@ -61,15 +61,8 @@ class TimeSeriesDataset(Dataset):
     def __getitem__(self, idx):
         sequence = self.data[idx : idx + self.sequence_length]
         input_sequence = sequence[:-1]
-        target = sequence[-1]
+        target = sequence[-1:]
         return torch.tensor(input_sequence, dtype=torch.float32), torch.tensor(target, dtype=torch.float32)
-
-def load_data(crypto):
-    # Function to load data from a CSV file for a specific cryptocurrency
-    with open(f'./data/{crypto}.csv', 'r') as f:
-        reader = csv.reader(f)
-        data = [row for row in reader]
-    return data
 
 def get_image_for_crypto(crypto):
     # Function to get the image for a specific cryptocurrency
@@ -90,36 +83,50 @@ mean = None
 std = None
 
 def train_model(crypto_to_train):
-    prices = load_data(crypto_to_train)
+    api_key = open("./key", "r").read().strip()
+    crypto_abbreviation = get_abbreviation(crypto_to_train)
+    url = f'https://data.nasdaq.com/api/v3/datasets/BITFINEX/{crypto_abbreviation}USD/data.csv?api_key={api_key}'
+    response = requests.get(url)
+    current_price_data = response.text.split('\n')
+    csv_reader = csv.reader(current_price_data)
+    csv_reader = list(csv_reader)[1:]
+
+    prices = []
+    for row in csv_reader:
+        if row and row[4] != "Last":
+            prices.append(float(row[4]))
+
     sequence_length = 100
     dataset = TimeSeriesDataset(prices, sequence_length)
     your_data_loader = DataLoader(dataset, batch_size=32, shuffle=True)
-
-    # Create and initialize the model
-    input_size = 1
-    hidden_size = 1000
-    output_size = 1
-    PricePredictionModel = PricePredictionModel(input_size, hidden_size, output_size)
-
-    # Define loss and optimizer
-    criterion = nn.MSELoss()
-    optimizer = optim.Adam(PricePredictionModel.parameters(), lr=0.001)
 
     # Training loop
     num_epochs = 100  # Adjust as needed
     for epoch in range(num_epochs):
         for inputs, targets in your_data_loader:
             optimizer.zero_grad()
-            outputs = PricePredictionModel(inputs)
+            h = torch.zeros(1, inputs.size(0), hidden_size)  # Initialize the hidden state
+            #outputs = model(inputs.unsqueeze(2), h)
+            outputs = model(inputs.unsqueeze(2), h)
             loss = criterion(outputs, targets)
             loss.backward()
             optimizer.step()
 
     # Save the model weights after training
-    torch.save(PricePredictionModel.state_dict(), 'model_weights.pth')
+    torch.save(model.state_dict(), 'model_weights.pth')
 
 @app.route("/predict/<crypto>", methods=["GET"])
 def predict_crypto_price(crypto):
+    train_model(get_abbreviation(crypto))
+
+    # Load the saved model weights (Move this above training if the weights exist)
+    model_weights_path = 'model_weights.pth'
+    if torch.cuda.is_available():
+        PricePredictionModel.load_state_dict(torch.load(model_weights_path))
+    else:
+        PricePredictionModel.load_state_dict(torch.load(model_weights_path, map_location=torch.device('cpu')))
+    PricePredictionModel.eval()  # Set the model to evaluation mode
+
     global mean, std
 
     api_key = open("./key", "r").read().strip()
