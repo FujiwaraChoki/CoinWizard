@@ -11,12 +11,6 @@ current_price_data = current_price_response.json()
 current_price = current_price_data.get("current_price")
 print(colored("Current Bitcoin Price:", "green"), current_price)
 
-# Test training endpoint (you might want to customize this part)
-training_url = f"{base_url}/train/bitcoin"
-training_response = requests.post(training_url)
-training_message = training_response.json().get("message")
-print(colored("Training Result:", "green"), training_message)
-
 # Test prediction endpoint
 prediction_url = f"{base_url}/predict/bitcoin"
 prediction_response = requests.get(prediction_url)
